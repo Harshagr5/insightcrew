@@ -2,11 +2,11 @@
 
 Multi-agent data analysis built on [NVIDIA NOOA](https://github.com/NVIDIA-NeMo/labs-OO-Agents).
 Ask a question about a CSV; the crew plans the analysis, computes the numbers with pandas,
-checks its own coverage, and writes a short report with charts.
+checks its own coverage, and writes a short report with charts. A Fun way to work with Agents.
 
 ## How it works
 
-LLM agents make the decisions; a deterministic pandas engine does the math. The Planner
+LLM agents start by making the decisions; a deterministic pandas engine does the math. The Planner
 chooses which `(dimension, metric)` breakdowns answer the question, the engine computes
 them and saves charts, the Critic checks whether the findings cover the question, and the
 Writer produces the report from the computed numbers only — so figures are never invented.
