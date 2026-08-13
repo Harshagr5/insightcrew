@@ -61,19 +61,58 @@ class InsightCrew:
             out.append(f"Step {r.step_id} - {r.goal}: {r.finding}{chart}")
         return "\n".join(out) if out else "(no findings)"
 
+    @staticmethod
+    def _refusal(question: str, note: str) -> FinalReport:
+        """A deterministic 'cannot answer' report — no engine, no invented numbers."""
+        reason = note or "The question needs data or columns this dataset does not have."
+        return FinalReport(
+            title="Cannot answer from the available data",
+            headline=reason,
+            confidence="low",
+            body_markdown=(
+                f"**Question:** {question}\n\n"
+                f"This question can't be answered with the columns and metrics in this "
+                f"dataset. {reason}\n\n"
+                f"Available breakdowns: region, category, channel, segment, product, month. "
+                f"Available metrics: total revenue, total units, average unit price."
+            ),
+        )
+
     async def run(self, question: str) -> FinalReport:
         """Run the full pipeline for a question and return a FinalReport."""
         plan = await self.planner.plan(question)
-        results = [self._analyze(s) for s in plan.steps]
+        if not plan.answerable or not plan.steps:
+            return self._refusal(question, plan.note)
+
+        results: list[StepResult] = []
+        done: set[tuple[str, str]] = set()
+        for step in plan.steps:
+            results.append(self._analyze(step))
+            done.add((step.dimension, step.metric))
 
         findings = self._format_findings(results)
         review: Review = await self.critic.review(question, findings)
 
+        # Revision is deterministic: the Critic names specific (dimension, metric) steps,
+        # and we run exactly those through the engine — so a revision always adds coverage
+        # (or we stop, if the Critic only names breakdowns we already have).
         revisions = 0
-        while not review.approved and revisions < self.max_revisions:
-            gaps = "; ".join(review.missing + review.issues) or "add more concrete detail"
-            follow_up = await self.planner.plan(f"{question}\nStill missing: {gaps}")
-            results += [self._analyze(s) for s in follow_up.steps]
+        while (
+            not review.approved
+            and review.missing_steps
+            and revisions < self.max_revisions
+        ):
+            added = False
+            for step in review.missing_steps:
+                key = (step.dimension, step.metric)
+                if key in done:
+                    continue
+                step.id = len(results) + 1  # keep ids/chart names unique
+                results.append(self._analyze(step))
+                done.add(key)
+                added = True
+            if not added:
+                break  # nothing new proposed; don't loop forever
             findings = self._format_findings(results)
             review = await self.critic.review(question, findings)
             revisions += 1

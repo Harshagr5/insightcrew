@@ -34,9 +34,15 @@ def test_step_rejects_unknown_metric():
         _step(metric="total_profit")
 
 
-def test_plan_requires_at_least_one_step():
-    with pytest.raises(ValidationError):
-        AnalysisPlan(question="q", steps=[])
+def test_plan_answerable_defaults_true():
+    plan = AnalysisPlan(question="q", steps=[_step()])
+    assert plan.answerable is True
+
+
+def test_unanswerable_plan_may_have_no_steps():
+    plan = AnalysisPlan(question="q", answerable=False, note="no cost column", steps=[])
+    assert plan.answerable is False
+    assert plan.steps == []
 
 
 def test_plan_caps_step_count():
@@ -53,7 +59,7 @@ def test_report_confidence_is_constrained():
 def test_review_defaults_are_empty_lists():
     r = Review(approved=True)
     assert r.issues == []
-    assert r.missing == []
+    assert r.missing_steps == []
 
 
 def test_stepresult_chart_is_optional():

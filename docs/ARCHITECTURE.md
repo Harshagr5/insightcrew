@@ -37,9 +37,13 @@ fake agents via `InsightCrew.from_agents(...)` and run the *real* engine on a ti
 DataFrame — so both the flow (including the revision path) and the computed numbers are
 verified with no network and no model.
 
-**5. Self-correction with a budget.** The Critic can reject the findings and hand the
-Planner a targeted list of what's missing, triggering another round, bounded by
-`--max-revisions` so it can't loop forever.
+**5. Self-correction that actually corrects.** An earlier version had the Critic reject
+in prose and the Planner re-plan from that text; evaluation showed the Critic fired ~68%
+of the time while revisions improved coverage 0% of the time — tokens spent for nothing.
+Now the Critic must name the specific `(dimension, metric)` steps it wants, drawn from the
+same fixed menu, and the orchestrator runs exactly those through the engine. So a rejection
+is only allowed when it's actionable, and a revision is guaranteed to add coverage (or the
+loop stops). Bounded by `--max-revisions`.
 
 **6. Provider independence.** `llm_setup.build_llm()` is the only vendor-aware code.
 Because NOOA wraps LiteLLM, switching between NVIDIA NIM, Gemini, Ollama, or OpenAI is a

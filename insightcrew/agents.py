@@ -35,20 +35,32 @@ class PlannerAgent(Agent):
         Give each step a short, human-readable `goal`. Cover the question from a few
         complementary angles — e.g. which group leads on revenue, and how revenue
         moved month over month. Do not repeat the same (dimension, metric) twice.
+
+        If the question needs data this dataset does not have (a column, dimension, or
+        metric not in the lists above — e.g. profit, cost, customer age, marketing
+        spend), set answerable=False, put a one-line reason in `note`, and return no
+        steps. Do not force an unrelated breakdown onto a question you cannot answer.
         """
         ...
 
 
 class CriticAgent(Agent):
-    """You are a rigorous reviewer who checks whether findings answer the question."""
+    """You review whether findings answer the question, and name any missing breakdown."""
 
     @strategy(PredictStrategy())
     async def review(self, question: str, findings: str) -> Review:
-        """Judge whether the findings fully and concretely answer the question.
+        """Decide whether the findings already answer the question.
 
-        Approve only when the findings are specific (real numbers) and cover every
-        part of the question. Otherwise set approved=False and list precise issues
-        plus anything still missing. Never invent data of your own.
+        Default to approving. Set approved=True (with empty missing_steps) whenever the
+        findings cover the question with concrete numbers. Only reject when a SPECIFIC
+        additional breakdown, computable from this dataset, would materially help — and
+        then list it in missing_steps. Do not reject for wording, tone, or polish, and
+        never ask for data this dataset does not have.
+
+        Available dimension: region, category, channel, segment, product, month
+        (month = trend over time). Available metric: total_revenue, total_units,
+        avg_unit_price. Each missing step needs a short goal, a dimension, and a metric
+        from those lists — never anything outside them.
         """
         ...
 

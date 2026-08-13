@@ -27,10 +27,20 @@ class AnalysisStep(BaseModel):
 
 
 class AnalysisPlan(BaseModel):
-    """An ordered plan for answering the user's question about a dataset."""
+    """An ordered plan for answering the user's question about a dataset.
+
+    When the question cannot be answered with the available dimensions/metrics, the
+    Planner sets answerable=False, explains why in `note`, and leaves `steps` empty —
+    so the system declines instead of forcing the question onto the nearest breakdown.
+    """
 
     question: str = Field(description="The user's original question")
-    steps: list[AnalysisStep] = Field(min_length=1, max_length=6)
+    answerable: bool = Field(
+        default=True,
+        description="False if the question needs data/columns this dataset does not have",
+    )
+    note: str = Field(default="", description="If not answerable, a one-line reason why")
+    steps: list[AnalysisStep] = Field(default_factory=list, max_length=6)
 
 
 class StepResult(BaseModel):
@@ -43,12 +53,13 @@ class StepResult(BaseModel):
 
 
 class Review(BaseModel):
-    """A critic's judgment of whether the findings answer the question."""
+    """A critic's judgment, plus any concrete breakdown it wants added before approving."""
 
-    approved: bool = Field(description="True if the findings fully answer the question")
-    issues: list[str] = Field(default_factory=list, description="Problems to fix")
-    missing: list[str] = Field(
-        default_factory=list, description="Aspects of the question not yet addressed"
+    approved: bool = Field(description="True if the findings already answer the question")
+    issues: list[str] = Field(default_factory=list, description="Short reasons, if rejecting")
+    missing_steps: list[AnalysisStep] = Field(
+        default_factory=list,
+        description="Specific, computable (dimension, metric) steps to add before approving",
     )
 
 

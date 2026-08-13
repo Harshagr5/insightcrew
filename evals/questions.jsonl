@@ -1,0 +1,30 @@
+{"id": 1, "type": "easy", "question": "Which region earns the most revenue?", "answerable": true, "gold": [[["region", "total_revenue"]]]}
+{"id": 2, "type": "easy", "question": "Which product category brings in the highest revenue?", "answerable": true, "gold": [[["category", "total_revenue"]]]}
+{"id": 3, "type": "easy", "question": "How does total revenue change over the year?", "answerable": true, "gold": [[["month", "total_revenue"]]]}
+{"id": 4, "type": "easy", "question": "Which sales channel generates more revenue, online or retail?", "answerable": true, "gold": [[["channel", "total_revenue"]]]}
+{"id": 5, "type": "easy", "question": "Which customer segment produces the most revenue?", "answerable": true, "gold": [[["segment", "total_revenue"]]]}
+{"id": 6, "type": "easy", "question": "Which product sells the most units?", "answerable": true, "gold": [[["product", "total_units"]]]}
+{"id": 7, "type": "easy", "question": "What is the average unit price for each category?", "answerable": true, "gold": [[["category", "avg_unit_price"]]]}
+{"id": 8, "type": "easy", "question": "Which region sells the most units?", "answerable": true, "gold": [[["region", "total_units"]]]}
+{"id": 9, "type": "easy", "question": "Do consumer or business customers pay more per unit on average?", "answerable": true, "gold": [[["segment", "avg_unit_price"]]]}
+{"id": 10, "type": "easy", "question": "Which month had the highest revenue?", "answerable": true, "gold": [[["month", "total_revenue"]]]}
+{"id": 11, "type": "easy", "question": "Which category has the lowest revenue?", "answerable": true, "gold": [[["category", "total_revenue"]]]}
+{"id": 12, "type": "easy", "question": "Do online or retail buyers pay more per unit?", "answerable": true, "gold": [[["channel", "avg_unit_price"]]]}
+{"id": 13, "type": "ambiguous", "question": "How are we doing?", "answerable": true, "gold": [[["month", "total_revenue"]], [["region", "total_revenue"]], [["category", "total_revenue"]]]}
+{"id": 14, "type": "ambiguous", "question": "Give me an overview of sales.", "answerable": true, "gold": [[["region", "total_revenue"]], [["category", "total_revenue"]], [["month", "total_revenue"]]]}
+{"id": 15, "type": "ambiguous", "question": "What is driving our revenue?", "answerable": true, "gold": [[["region", "total_revenue"]], [["category", "total_revenue"]]]}
+{"id": 16, "type": "ambiguous", "question": "Where should we focus to grow?", "answerable": true, "gold": [[["region", "total_revenue"]], [["category", "total_revenue"]], [["channel", "total_revenue"]]]}
+{"id": 17, "type": "multi", "question": "Compare revenue by region and by category.", "answerable": true, "gold": [[["region", "total_revenue"], ["category", "total_revenue"]]]}
+{"id": 18, "type": "multi", "question": "Which region and which channel drive revenue?", "answerable": true, "gold": [[["region", "total_revenue"], ["channel", "total_revenue"]]]}
+{"id": 19, "type": "multi", "question": "Show revenue by category and how it changed over the year.", "answerable": true, "gold": [[["category", "total_revenue"], ["month", "total_revenue"]]]}
+{"id": 20, "type": "multi", "question": "Compare units sold by product with revenue by region.", "answerable": true, "gold": [[["product", "total_units"], ["region", "total_revenue"]]]}
+{"id": 21, "type": "multi", "question": "Break down both revenue and units sold by segment.", "answerable": true, "gold": [[["segment", "total_revenue"], ["segment", "total_units"]]]}
+{"id": 22, "type": "multi", "question": "Break revenue down by region, by category, and by channel.", "answerable": true, "gold": [[["region", "total_revenue"], ["category", "total_revenue"], ["channel", "total_revenue"]]]}
+{"id": 23, "type": "unanswerable", "question": "What is our profit margin by region?", "answerable": false, "gold": []}
+{"id": 24, "type": "unanswerable", "question": "How much did we spend on marketing this year?", "answerable": false, "gold": []}
+{"id": 25, "type": "unanswerable", "question": "What is the average age of our customers?", "answerable": false, "gold": []}
+{"id": 26, "type": "unanswerable", "question": "Which salesperson closed the most deals?", "answerable": false, "gold": []}
+{"id": 27, "type": "unanswerable", "question": "What is our customer retention rate?", "answerable": false, "gold": []}
+{"id": 28, "type": "unanswerable", "question": "How many orders were returned or refunded?", "answerable": false, "gold": []}
+{"id": 29, "type": "unanswerable", "question": "What is revenue broken down by city?", "answerable": false, "gold": []}
+{"id": 30, "type": "unanswerable", "question": "What is our gross profit by product?", "answerable": false, "gold": []}

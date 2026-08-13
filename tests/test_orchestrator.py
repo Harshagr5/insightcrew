@@ -51,7 +51,7 @@ class FakeCritic:
 
     async def review(self, question: str, findings: str) -> Review:
         approved = self.approvals.pop(0)
-        return Review(approved=approved, issues=[] if approved else ["thin"], missing=[] if approved else ["by category"])
+        return Review(approved=approved, issues=[] if approved else ["thin"], missing_steps=[])
 
 
 class FakeWriter:
@@ -78,16 +78,35 @@ async def test_happy_path_analyses_every_step(tmp_path):
     assert all((tmp_path / p.split("/")[-1]).exists() for p in writer.last["chart_paths"])
 
 
+class GapCritic:
+    """Rejects once with a specific missing step, then approves — mirrors the real critic."""
+
+    def __init__(self):
+        self.calls = 0
+
+    async def review(self, question: str, findings: str) -> Review:
+        self.calls += 1
+        if self.calls == 1:
+            return Review(
+                approved=False,
+                issues=["also break down by category"],
+                missing_steps=[AnalysisStep(id=1, goal="by category",
+                                            dimension="category", metric="total_revenue")],
+            )
+        return Review(approved=True)
+
+
 @pytest.mark.asyncio
-async def test_revision_loop_adds_a_step(tmp_path):
-    planner, critic, writer = FakePlanner(), FakeCritic([False, True]), FakeWriter()
+async def test_revision_applies_critic_named_step(tmp_path):
+    planner, critic, writer = FakePlanner(), GapCritic(), FakeWriter()
     crew = InsightCrew.from_agents(planner, critic, writer, tiny_df(),
                                    charts_dir=str(tmp_path), max_revisions=1)
 
     await crew.run("q")
 
-    assert planner.calls == 2                              # one revision round
-    assert len(writer.last["chart_paths"]) == 3           # 2 initial + 1 follow-up
+    assert planner.calls == 1                             # revision no longer re-plans
+    assert critic.calls == 2                             # review -> add step -> re-review
+    assert len(writer.last["chart_paths"]) == 3          # 2 planned + 1 critic-added
 
 
 @pytest.mark.asyncio
@@ -100,3 +119,22 @@ async def test_max_revisions_zero_never_revises(tmp_path):
 
     assert planner.calls == 1
     assert isinstance(report, FinalReport)
+
+
+class RefusingPlanner:
+    async def plan(self, question: str) -> AnalysisPlan:
+        return AnalysisPlan(question=question, answerable=False, note="needs profit data", steps=[])
+
+
+@pytest.mark.asyncio
+async def test_refuses_unanswerable_without_touching_engine_or_writer(tmp_path):
+    critic, writer = FakeCritic([True]), FakeWriter()
+    crew = InsightCrew.from_agents(RefusingPlanner(), critic, writer, tiny_df(),
+                                   charts_dir=str(tmp_path), max_revisions=1)
+
+    report = await crew.run("what is our profit by region?")
+
+    assert "Cannot answer" in report.title       # deterministic refusal
+    assert report.confidence == "low"
+    assert writer.last is None                    # Writer never called -> nothing to hallucinate
+    assert not list(tmp_path.glob("*.png"))       # engine produced no charts
